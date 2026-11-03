@@ -34,7 +34,7 @@ plazas = []  # cada plaza es una lista [x, y, ancho, alto]
 x1 = y1 = 0
 dibujando = False
 
-
+# Función para cargar la imagen o video (primer fotograma) 
 def cargar_imagen(ruta):
     # Si es una imagen se lee directamente
     if ruta.lower().endswith((".jpg", ".jpeg", ".png")):
@@ -50,7 +50,7 @@ def cargar_imagen(ruta):
     else:
         return None
 
-
+# Función para dibujar las plazas sobre la imagen.
 def dibujarPlazas(nueva=None):
     img = img_original.copy()
 
@@ -64,7 +64,7 @@ def dibujarPlazas(nueva=None):
     cv2.putText(img, "Plazas: " + str(len(plazas)), (10, 25), fuente, 0.8, color_texto, 2)
     cv2.imshow('Marcar plazas', img)
 
-
+# Control de los eventos de ratón para dibujar y borrar plazas sobre la imagen
 def eventos_raton(evento, x, y, flags, parametros):
     global x1, y1, dibujando
 
@@ -88,6 +88,7 @@ def eventos_raton(evento, x, y, flags, parametros):
 
         dibujarPlazas()
 
+    # Eliminar una plaza creada al pulsar el botón derecho del ratón sobre ella
     elif evento == cv2.EVENT_RBUTTONDOWN:
         # Se borra la última plaza (la más reciente) que contenga el punto pulsado
         for i in range(len(plazas) - 1, -1, -1):
@@ -99,9 +100,9 @@ def eventos_raton(evento, x, y, flags, parametros):
 
         dibujarPlazas()
 
-
 img_original = cargar_imagen(fuente_imagen)
 
+# control de errores en caso de no poder acceder a la imagen o video fuentes
 if img_original is None:
     print("No es posible abrir", fuente_imagen)
     exit()
@@ -115,18 +116,21 @@ if os.path.exists(archivo_plazas):
 
     print("Se han cargado", len(plazas), "plazas de", archivo_plazas)
 
+# interfaz de la aplicación
 cv2.namedWindow('Marcar plazas')
 cv2.setMouseCallback('Marcar plazas', eventos_raton)
 dibujarPlazas()
 
 while True:
     tecla = cv2.waitKey(0) & 0xFF
-
+    
+    # deshacer la última plaza dibujada
     if tecla == ord('z') and len(plazas) > 0:
         plazas.pop()
         dibujarPlazas()
 
-    elif tecla == ord('s'): # guardar las plazas en un archivo json y cerrar la aplicación
+    # guardar las plazas en un archivo json y cerrar la aplicación
+    elif tecla == ord('s'): 
         # Se guarda también la resolución para poder reescalar si el vídeo cambia de tamaño
         datos = {"resolucion": [ancho_img, alto_img], "plazas": plazas}
 
@@ -135,7 +139,8 @@ while True:
 
         print("Guardadas", len(plazas), "plazas en", archivo_plazas)
 
-    elif tecla == ord('q'): # salir pulsando la letra "q" en cualquier momento
+    # salir pulsando la letra "q" en cualquier momento
+    elif tecla == ord('q'): 
         break
 
 cv2.destroyAllWindows()
