@@ -23,6 +23,8 @@ archivo_plazas =  './ejemplo_foto/plazas.json'
 color_plaza = (0, 255, 0)   # color de las plazas (verde)
 color_nueva = (0, 255, 255) # color de la plaza mientras se dibuja el contorno (amarillo)
 color_texto = (0, 0, 255)   # color del texto (rojo)
+color_fondo_texto = (0, 0, 0)     # fondo negro del contador de plazas
+color_texto_contador = (255, 255, 255)  # contador de plazas en blanco
 grosor = 2
 fuente = cv2.FONT_HERSHEY_SIMPLEX
 escala = 0.5
@@ -61,7 +63,10 @@ def dibujarPlazas(nueva=None):
     if nueva is not None:
         cv2.rectangle(img, nueva[0], nueva[1], color_nueva, grosor)
 
-    cv2.putText(img, "Plazas: " + str(len(plazas)), (10, 25), fuente, 0.8, color_texto, 2)
+    texto_contador = "Plazas: " + str(len(plazas))
+    (ancho_texto, alto_texto), base = cv2.getTextSize(texto_contador, fuente, 0.8, 2)
+    cv2.rectangle(img, (5, 3), (ancho_texto + 15, alto_texto + base + 9), color_fondo_texto, -1)
+    cv2.putText(img, texto_contador, (10, alto_texto + 5), fuente, 0.8, color_texto_contador, 2)
     cv2.imshow('Marcar plazas', img)
 
 # Control de los eventos de ratón para dibujar y borrar plazas sobre la imagen
