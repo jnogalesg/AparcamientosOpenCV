@@ -4,7 +4,7 @@ PROYECTO OPENCV PARKING - Parte 2: DETECCIÓN DE PLAZAS OCUPADAS Y LIBRES
 Lee las plazas marcadas con 1-marcar_plazas.py y, para cada fotograma:
   1) Pasa a blanco y negro y suaviza
   2) Aplica un umbral adaptativo para comprobar si la plaza está libre u ocupada.
-  Se busca el contraste entre un coche y sus detalles, con el asfalto vacío.
+        Se busca el contraste entre un coche y sus detalles, con el asfalto vacío.
   3) Limpia el ruido con erosión y dilatación 
   4) En cada plaza se calcula el % de píxeles blancos (porcentaje de posibilidad de que haya un coche)
   5) Si supera el límite la plaza está OCUPADA (rojo). 
@@ -55,7 +55,10 @@ def actualizar_limite(valor):
     global limite_ocupacion
     limite_ocupacion = valor
 
-def procesar(frame):
+# Función para procesamiento de la imagen/video
+# Aplica suavizado y umbral adaptativo
+# Por último, erosión y dilatación para eliminar ruido
+def procesarImagen(frame):
     img_byn = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     img_suavizada = cv2.blur(img_byn, (3, 3))
     img_umbral = cv2.adaptiveThreshold(img_suavizada, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, bloque, constante)
@@ -78,8 +81,8 @@ ancho_ref, alto_ref = datos["resolucion"]
 num_plazas = len(plazas)
 
 # --- Se abre la fuente (imagen o vídeo) ---
-modo_imagen = es_imagen(fuente_imagen)
-fps = 30
+modo_imagen = fuente_imagen.lower().endswith((".jpg", ".jpeg", ".png")) # comprueba si la fuente es una imagen o un vídeo
+fps = 30                                                                # true si es imagen, false si es video
 
 if modo_imagen:
     img_fija = cv2.imread(fuente_imagen)
@@ -98,6 +101,7 @@ else:
 
 velocidad_reproduccion = int(1000 / fps)
 
+# interfaz de aplicación : vista de la imagen/video, y controles para ajustar límite, bloque y cte.
 cv2.namedWindow('Aparcamiento')
 cv2.createTrackbar('Limite %', 'Aparcamiento', limite_ocupacion, 100, actualizar_limite)
 cv2.createTrackbar('Bloque', 'Aparcamiento', bloque, 99, actualizar_bloque)
@@ -122,19 +126,19 @@ while True:
     if frame.shape[1] != ancho_ref or frame.shape[0] != alto_ref:
         frame = cv2.resize(frame, (ancho_ref, alto_ref))
 
-    img_umbral = procesar(frame)
+    img_umbral = procesarImagen(frame)
 
     for i, (x, y, ancho, alto) in enumerate(plazas):
         roi = img_umbral[y:y + alto, x:x + ancho]
         porcentajes[i] = cv2.countNonZero(roi) * 100 / (ancho * alto)
         ocupada = porcentajes[i] > limite_ocupacion
 
-        # Para evitar parpadeos, el estado sólo cambia si el nuevo valor se repite varios fotogramas
+        # El estado sólo cambia si el nuevo valor se repite durante varios fotogramas
         if primer_fotograma:
             estado[i] = ocupada
         elif ocupada != estado[i]:
             contador[i] += 1
-
+            # Si supera el limite de fotogramas (5), cambia de estado
             if contador[i] >= fotogramas_confirmar:
                 estado[i] = ocupada
                 contador[i] = 0
@@ -143,6 +147,7 @@ while True:
 
     primer_fotograma = False
 
+    # Dibujado de las plazas, con el color correspondiente (estado) y porcentaje de ocupación
     for i, (x, y, ancho, alto) in enumerate(plazas):
         if estado[i]: color = color_ocupada
         else: color = color_libre
@@ -151,7 +156,7 @@ while True:
         cv2.putText(frame, str(int(porcentajes[i])) + "%", (x + 3, y + 15), fuente, escala, color, 1)
 
     num_ocupadas = sum(estado)
-    num_libres = num_plazas - num_ocupadas
+    num_libres = num_plazas - num_ocupadas  # se calculan las plazas libres para mostrarse a continuación
 
     # Panel con el contador, con fondo para que se lea bien sobre cualquier imagen
     cv2.rectangle(frame, (0, 0), (270, 35), (0, 0, 0), -1)
@@ -163,9 +168,11 @@ while True:
 
     tecla = cv2.waitKey(velocidad_reproduccion) & 0xFF
 
+    # con "q", salimos de la aplicación
     if tecla == ord('q'):
         break
-
+    
+    # con "g", guardamos el estado actual del aparcamiento en un archivo JSON
     elif tecla == ord('g'):
         # Estado en formato JSON, como lo enviaría un sensor a una plataforma de ciudad inteligente
         resumen = {"total": num_plazas, "libres": num_libres, "ocupadas": num_ocupadas,
@@ -175,7 +182,8 @@ while True:
             json.dump(resumen, archivo, indent=2)
 
         print("Estado guardado en", archivo_estado)
-
+        
+# si se ejecuta con un video, la aplicación se cierra al terminar la reproducción
 if not modo_imagen:
     video.release()
 
