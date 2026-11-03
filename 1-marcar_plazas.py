@@ -22,7 +22,7 @@ archivo_plazas =  './ejemplo_foto/plazas.json'
 
 color_plaza = (0, 255, 0)   # color de las plazas (verde)
 color_nueva = (0, 255, 255) # color de la plaza mientras se dibuja el contorno (amarillo)
-color_texto = (255, 255, 255)   # color del texto (rojo)
+color_texto = (0, 0, 255)   # color del texto (rojo)
 grosor = 2
 fuente = cv2.FONT_HERSHEY_SIMPLEX
 escala = 0.5
@@ -67,6 +67,10 @@ def dibujarPlazas(nueva=None):
 # Control de los eventos de ratón para dibujar y borrar plazas sobre la imagen
 def eventos_raton(evento, x, y, flags, parametros):
     global x1, y1, dibujando
+    
+    # Se limitan las coordenadas al tamaño de la imagen (por si el ratón sale de la ventana al arrastrar)
+    x = max(0, min(x, ancho_img - 1))
+    y = max(0, min(y, alto_img - 1))
 
     # Se dibuja un rectángulo mientras se arrastra el ratón con el botón izquierdo pulsado
     if evento == cv2.EVENT_LBUTTONDOWN:

@@ -8,7 +8,7 @@ Lee las plazas marcadas con 1-marcar_plazas.py y, para cada fotograma:
   3) Limpia el ruido con erosión y dilatación 
   4) En cada plaza se calcula el % de píxeles blancos (porcentaje de posibilidad de que haya un coche)
   5) Si supera el límite la plaza está OCUPADA (rojo). 
-        si no lo supera, se etiquta la plaza como LIBRE (verde)
+        si no lo supera, se etiqueta la plaza como LIBRE (verde)
 
     q -> salir
     g -> guardar el estado actual del aparcamiento en un JSON
@@ -81,9 +81,9 @@ ancho_ref, alto_ref = datos["resolucion"]
 num_plazas = len(plazas)
 
 # --- Se abre la fuente (imagen o vídeo) ---
-modo_imagen = fuente_imagen.lower().endswith((".jpg", ".jpeg", ".png")) # comprueba si la fuente es una imagen o un vídeo
-fps = 30                                                                # true si es imagen, false si es video
-
+modo_imagen = fuente_imagen.lower().endswith((".jpg", ".jpeg", ".png")) # True si la fuente es una imagen y False si es un vídeo
+fps = 30   # fps por defecto (se cambia por los del vídeo si los tiene)
+  
 if modo_imagen:
     img_fija = cv2.imread(fuente_imagen)
 
@@ -118,9 +118,15 @@ while True:
     else:
         ret, frame = video.read()
 
+        # Al llegar al final, el vídeo vuelve a empezar (hasta pulsar "q")
         if not ret:
-            print("Reproducción finalizada")
-            break
+            video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = video.read()
+            primer_fotograma = True   # volvemos al primer fotograma y reproduce de nuevo el video
+
+            if not ret:
+                print("No se puede leer el vídeo")
+                break
 
     # Si el vídeo no tiene la misma resolución que la imagen usada para marcar, se reescala
     if frame.shape[1] != ancho_ref or frame.shape[0] != alto_ref:
@@ -183,7 +189,6 @@ while True:
 
         print("Estado guardado en", archivo_estado)
         
-# si se ejecuta con un video, la aplicación se cierra al terminar la reproducción
 if not modo_imagen:
     video.release()
 
