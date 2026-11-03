@@ -17,8 +17,8 @@ import os
 
 # fuente_imagen - ruta al vídeo (.mp4...) o imagen (.jpg, .png)
 # archivo_plazas - ruta al archivo JSON donde se guardarán las plazas creadas sobre la imagen/video
-fuente_imagen = './ejemplo_foto/parking.mp4' 
-archivo_plazas = './ejemplo_foto/plazas-parking.json'  
+fuente_imagen = './ejemplo_foto/aparcamiento.jpg'
+archivo_plazas =  './ejemplo_foto/plazas.json'
 
 color_plaza = (0, 255, 0)   # color de las plazas (verde)
 color_nueva = (0, 255, 255) # color de la plaza mientras se dibuja el contorno (amarillo)

@@ -21,8 +21,8 @@ import numpy as np
 # fuente_imagen - ruta al vídeo (.mp4...) o imagen (.jpg, .png)
 # archivo_plazas - ruta al archivo JSON donde se guardarán las plazas creadas sobre la imagen/video
 # archivo_estado - ruta al archivo JSON donde se guardará el estado del aparcamiento (si se pulsa "g")
-fuente_imagen = './ejemplo_foto/parking.mp4' 
-archivo_plazas = './ejemplo_foto/plazas-parking.json'  
+fuente_imagen = './ejemplo_foto/aparcamiento.jpg'
+archivo_plazas =  './ejemplo_foto/plazas.json'
 archivo_estado = './estado_aparcamiento.json'
 
 # colores de las plazas
@@ -64,9 +64,6 @@ def procesar(frame):
     img_umbral = cv2.erode(img_umbral, kernel)
     img_umbral = cv2.dilate(img_umbral, kernel, iterations=2)
     return img_umbral
-
-def es_imagen(ruta):
-    return ruta.lower().endswith((".jpg", ".jpeg", ".png"))
 
 # --- Se cargan las plazas marcadas ---
 try:
